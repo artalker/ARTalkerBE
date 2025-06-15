@@ -1,12 +1,20 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import OpenAI from 'openai';
+import { ConversationsRepository } from '@src/conversations/conversations.repository';
+import { MessagesRepository } from '@src/messages/messages.repository';
+import { resultSchema } from '@src/constants/aiResponseSchema';
+import { zodTextFormat } from 'openai/helpers/zod';
+import { systemPrompt } from '@src/constants/prompt';
 
 @Injectable()
 export class OpenAIService {
   private openRouter: OpenAI;
   private openai: OpenAI;
 
-  constructor() {
+  constructor(
+    private readonly conversationsRepository: ConversationsRepository,
+    private readonly messagesRepository: MessagesRepository,
+  ) {
     // OpenRouter
     this.openRouter = new OpenAI({
       baseURL: 'https://openrouter.ai/api/v1',
@@ -24,7 +32,7 @@ export class OpenAIService {
   }
 
   // Response API version (OpenAI ChatGPT)
-  async getAIResponse(content: string) {
+  async getAIResponse(content: string, responseId: string | null) {
     try {
       const response = await this.openai.responses.create({
         model: 'gpt-4.1-nano-2025-04-14',
@@ -34,6 +42,7 @@ export class OpenAIService {
             content,
           },
         ],
+        previous_response_id: responseId,
       });
       console.log('response: ', response.output_text);
       return response;
@@ -61,6 +70,44 @@ export class OpenAIService {
       return completion.choices[0].message;
     } catch (error) {
       console.error('Error in getCompletion: ', error);
+      throw error;
+    }
+  }
+
+  async createRatingAndFeedback(conversationId: number) {
+    const conversation =
+      await this.conversationsRepository.findConversationById(conversationId);
+    if (!conversation) {
+      throw new NotFoundException('Conversation not found');
+    }
+
+    const messages =
+      await this.messagesRepository.findAllByConversationId(conversationId);
+    console.log('messages: ', messages);
+
+    try {
+      const { output_parsed } = await this.openai.responses.parse({
+        model: 'gpt-4.1-nano-2025-04-14',
+        input: [
+          {
+            role: 'system',
+            content: systemPrompt,
+          },
+          ...messages.map((message) => ({
+            role: message.sender,
+            content: message.content,
+          })),
+        ],
+
+        text: {
+          format: zodTextFormat(resultSchema, 'result'),
+        },
+      });
+
+      console.log('output_parsed: ', output_parsed);
+      return output_parsed;
+    } catch (error) {
+      console.error('Error in createRatingAndFeedback: ', error);
       throw error;
     }
   }

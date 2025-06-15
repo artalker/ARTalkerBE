@@ -4,26 +4,25 @@ import {
   Column,
   ManyToOne,
   CreateDateColumn,
-  Check,
   JoinColumn,
 } from 'typeorm';
-import { Conversation } from './conversation.entity';
-import { Messages } from '../../messages/entities/messages.entity';
+import { Conversation } from '@src/conversations/entities/conversation.entity';
+import { Messages } from '@src/messages/entities/messages.entity';
 
 @Entity()
-@Check(
-  'feedback_type_check',
-  "feedback_type IN ('grammar', 'vocabulary', 'expression')",
-)
+@Entity('conversation_feedbacks')
 export class ConversationFeedback {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Conversation, { onDelete: 'SET NULL' })
+  @Column({ name: 'conversation_id' })
+  conversationId: number;
+
+  @ManyToOne(() => Conversation)
   @JoinColumn({ name: 'conversation_id' })
   conversation: Conversation;
 
-  @ManyToOne(() => Messages, { onDelete: 'SET NULL' })
+  @ManyToOne(() => Messages)
   @JoinColumn({ name: 'message_id' })
   message: Messages;
 
@@ -33,16 +32,13 @@ export class ConversationFeedback {
   @Column({ name: 'revised_text', type: 'text' })
   revisedText: string;
 
-  @Column({ type: 'text' })
-  explanation: string;
-
   @Column({
-    name: 'feedback_type',
+    name: 'explanation',
     type: 'varchar',
-    length: 20,
-    default: 'grammar',
+    length: 500,
+    comment: '한국어 설명 (500자 이내)',
   })
-  feedbackType: 'grammar' | 'vocabulary' | 'expression';
+  explanation: string;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

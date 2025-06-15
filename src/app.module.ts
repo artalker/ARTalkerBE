@@ -10,7 +10,7 @@ import { UsersModule } from './users/users.module';
 import { ArtworksModule } from './artworks/artworks.module';
 import { ConversationsModule } from './conversations/conversations.module';
 import { MessagesModule } from './messages/messages.module';
-
+import { ResultsModule } from './results/results.module';
 @Module({
   imports: [
     // nest.js 설정
@@ -41,12 +41,14 @@ import { MessagesModule } from './messages/messages.module';
       }),
       inject: [ConfigService],
     }),
+    // modules
     OpenAIModule,
     AuthModule,
     UsersModule,
     ArtworksModule,
     ConversationsModule,
     MessagesModule,
+    ResultsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

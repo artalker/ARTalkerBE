@@ -21,7 +21,7 @@ export class Messages {
   responseId: string;
 
   @Column({ type: 'varchar', length: 10 })
-  sender: 'user' | 'ai';
+  sender: 'user' | 'assistant';
 
   @Column('text')
   content: string;

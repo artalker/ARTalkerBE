@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 import { Messages } from './entities/messages.entity';
 import { CreateMessageDto } from './dto/create-message.dto';
@@ -13,9 +13,13 @@ export class MessagesRepository {
 
   async createMessage(createMessageDto: CreateMessageDto): Promise<Messages> {
     const { conversationId, sender, content, responseId } = createMessageDto;
+    if (sender !== 'user' && sender !== 'assistant') {
+      throw new BadRequestException('Invalid sender');
+    }
+
     const message = this.messagesRepository.create({
       conversation: { id: conversationId },
-      sender: sender as 'user' | 'ai',
+      sender,
       content,
       responseId,
     });

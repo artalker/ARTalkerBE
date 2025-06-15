@@ -11,7 +11,10 @@ export class OpenAIController {
   }
 
   @Post('response')
-  async getAIResponse(@Body('content') content: string) {
-    return this.openAIService.getAIResponse(content);
+  async getAIResponse(
+    @Body('content') content: string,
+    @Body('responseId') responseId: string,
+  ) {
+    return this.openAIService.getAIResponse(content, responseId);
   }
 }
