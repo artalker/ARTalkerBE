@@ -5,11 +5,11 @@ import {
   ManyToOne,
   CreateDateColumn,
   JoinColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { Conversation } from '@src/conversations/entities/conversation.entity';
 import { Messages } from '@src/messages/entities/messages.entity';
 
-@Entity()
 @Entity('conversation_feedbacks')
 export class ConversationFeedback {
   @PrimaryGeneratedColumn()
@@ -42,4 +42,7 @@ export class ConversationFeedback {
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
+
+  @UpdateDateColumn({ name: 'updated_at' })
+  updatedAt: Date;
 }

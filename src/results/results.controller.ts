@@ -10,4 +10,9 @@ export class ResultsController {
   create(@Body() createResultDto: CreateResultDto) {
     return this.resultsService.create(createResultDto);
   }
+
+  @Get()
+  getResult(@Query('conversationId') conversationId: number) {
+    return this.resultsService.getResult(conversationId);
+  }
 }

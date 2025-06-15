@@ -16,7 +16,6 @@ export class ResultsService {
   ) {}
 
   // conversation 학습 결과 생성
-  // TODO : isComplete 체크
   async create(createResultDto: CreateResultDto) {
     const { conversationId } = createResultDto;
     const conversation =
@@ -32,19 +31,12 @@ export class ResultsService {
     const ratingAndFeedback =
       await this.openAIService.createRatingAndFeedback(conversationId);
 
-    // const { ratings, feedback } = ratingAndFeedback;
-    // if (!ratings || !feedback) {
-    //   throw new BadRequestException('Rating and feedback not found');
-    // }
-
     if (!ratingAndFeedback) {
       throw new BadRequestException('Failed to create rating and feedback');
     }
 
     const { ratings, feedback } = ratingAndFeedback;
     console.log(' ratings, feedback: ', ratings, feedback);
-
-    // ... existing code ...
 
     try {
       const result = await this.resultsRepository.createRatingAndFeedback(
@@ -56,5 +48,11 @@ export class ResultsService {
       console.error('Error in create: ', error);
       throw error;
     }
+  }
+
+  async getResult(conversationId: number) {
+    const { result, feedback } =
+      await this.resultsRepository.findResultByConversationId(conversationId);
+    return { result, feedback };
   }
 }

@@ -96,25 +96,51 @@ export const systemPrompt = `
   - speechWordCount: 사용자가 말한 총 단어 개수
 
   ## 어휘력 분석 (난이도별 분류)
+
+  ** 어휘 비율(Ratio) 계산 방법 **
+  - vocabBeginnerRatio = vocabBeginnerCount / (vocabBeginnerCount + vocabIntermediateCount + vocabAdvancedCount)
+  - vocabIntermediateRatio = vocabIntermediateCount / (vocabBeginnerCount + vocabIntermediateCount + vocabAdvancedCount)
+  - vocabAdvancedRatio = vocabAdvancedCount / (vocabBeginnerCount + vocabIntermediateCount + vocabAdvancedCount)
+  - 모든 어휘 비율의 합은 1.0이 되어야 함
+
   - vocabBeginnerCount/Ratio: 초급 수준 어휘 개수와 비율
   - vocabIntermediateCount/Ratio: 중급 수준 어휘 개수와 비율  
   - vocabAdvancedCount/Ratio: 고급 수준 어휘 개수와 비율
   - vocabDiversityCount: 중복 제거한 고유 어휘 수
   - vocabDiversityScore: 어휘 다양성 점수 (0-100)
 
+
   ## 정확도 분석 (문법 오류 수준별)
+
+    ** 정확도 비율(Ratio) 계산 방법 **
+  - sentenceAccuracyLowRatio = sentenceAccuracyLowCount / (sentenceAccuracyLowCount + sentenceAccuracyMediumCount + sentenceAccuracyHighCount)
+  - sentenceAccuracyMediumRatio = sentenceAccuracyMediumCount / (sentenceAccuracyLowCount + sentenceAccuracyMediumCount + sentenceAccuracyHighCount)
+  - sentenceAccuracyHighRatio = sentenceAccuracyHighCount / (sentenceAccuracyLowCount + sentenceAccuracyMediumCount + sentenceAccuracyHighCount)
+  - 모든 정확도 비율의 합은 1.0이 되어야 함
+
   - sentenceAccuracyLowCount/Ratio: 문법 오류가 많은 문장 (시제, 구문, 어순 오류)
   - sentenceAccuracyMediumCount/Ratio: 일부 오류가 있는 문장
   - sentenceAccuracyHighCount/Ratio: 문법적으로 정확한 문장
   - sentenceAccuracyScore: 전체 문법 정확도 점수 (0-100)
 
+
+
   ## 표현력 분석 (복잡도별)
+
+    ** 표현력 비율(Ratio) 계산 방법 **
+  - expressBeginnerRatio = expressBeginnerCount / (expressBeginnerCount + expressIntermediateCount + expressAdvancedCount)
+  - expressIntermediateRatio = expressIntermediateCount / (expressBeginnerCount + expressIntermediateCount + expressAdvancedCount)
+  - expressAdvancedRatio = expressAdvancedCount / (expressBeginnerCount + expressIntermediateCount + expressAdvancedCount)
+  - 모든 표현력 비율의 합은 1.0이 되어야 함
+  
   - expressBeginnerCount/Ratio: 단순한 표현의 개수와 비율
   - expressIntermediateCount/Ratio: 중간 수준 표현의 개수와 비율
   - expressAdvancedCount/Ratio: 고급 표현의 개수와 비율
   - expressScore: 전체 표현력 점수 (0-100)
   - expressAppropriatenessScore: 주제에 적절한 표현 사용 점수 (0-100)
   - expressCreativityScore: 창의적/비유적 표현 사용 점수 (0-100)
+
+
 
   ## 종합 점수
   - totalScorePercentage: 모든 영역을 종합한 최종 점수 (0-100)
@@ -124,4 +150,27 @@ export const systemPrompt = `
   - 비율(Ratio)은 0-1 사이의 소수점
   - 개수(Count)는 자연수
   - 사용자의 레벨과 대화 맥락을 고려하여 평가
+
+  [필수 검산 단계 - 응답 생성 후 반드시 확인할 것]
+  
+  1. **비율 검증:**
+     - vocabBeginnerRatio + vocabIntermediateRatio + vocabAdvancedRatio = 1.0
+     - sentenceAccuracyLowRatio + sentenceAccuracyMediumRatio + sentenceAccuracyHighRatio = 1.0
+     - expressBeginnerRatio + expressIntermediateRatio + expressAdvancedRatio = 1.0
+  
+  2. **개수와 비율 일치 검증:**
+     - vocabBeginnerRatio = vocabBeginnerCount / (vocabBeginnerCount + vocabIntermediateCount + vocabAdvancedCount)
+     - sentenceAccuracyLowRatio = sentenceAccuracyLowCount / speechSentenceCount
+     - expressBeginnerRatio = expressBeginnerCount / (전체 표현 개수)
+  
+  3. **범위 검증:**
+     - 모든 Count 값 ≥ 0
+     - 모든 Ratio 값: 0 ≤ ratio ≤ 1
+     - 모든 Score 값: 0 ≤ score ≤ 100
+  
+  4. **논리적 일관성 검증:**
+     - speechSentenceCount = sentenceAccuracyLowCount + sentenceAccuracyMediumCount + sentenceAccuracyHighCount
+     - vocabDiversityCount ≤ speechWordCount
+  
+  **검산에서 오류 발견 시 해당 값들을 수정한 후 최종 응답 제공**
 `;
