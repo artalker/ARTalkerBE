@@ -50,9 +50,16 @@ export class ResultsService {
     }
   }
 
-  async getResult(conversationId: number) {
+  // conversation 학습결과 조회
+  async getConversationResult(conversationId: number) {
     const { result, feedback } =
       await this.resultsRepository.findResultByConversationId(conversationId);
     return { result, feedback };
+  }
+
+  // 총 학습통계 데이터
+  async getStatistics(userId: number) {
+    const statistics = await this.resultsRepository.getStatistics(userId);
+    return statistics;
   }
 }

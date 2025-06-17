@@ -1,4 +1,11 @@
-import { Controller, Get, Post, Body, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Query,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { CreateResultDto } from './dto/create-result.dto';
 import { ResultsService } from './results.service';
 
@@ -12,7 +19,12 @@ export class ResultsController {
   }
 
   @Get()
-  getResult(@Query('conversationId') conversationId: number) {
-    return this.resultsService.getResult(conversationId);
+  getConversationResult(@Query('conversationId') conversationId: number) {
+    return this.resultsService.getConversationResult(conversationId);
+  }
+
+  @Get('statistics')
+  async getStatistics(@Query('userId', ParseIntPipe) userId: number) {
+    return await this.resultsService.getStatistics(userId);
   }
 }

@@ -23,6 +23,7 @@ export class ConversationsRepository {
       userLevel,
       difficulty,
       isComplete: false,
+      startedAt: new Date(),
     });
     return this.conversationsRepository.save(conversation);
   }
