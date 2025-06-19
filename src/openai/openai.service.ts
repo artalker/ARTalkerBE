@@ -2,7 +2,10 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import OpenAI from 'openai';
 import { ConversationsRepository } from '@src/conversations/conversations.repository';
 import { MessagesRepository } from '@src/messages/messages.repository';
-import { resultSchema } from '@src/constants/aiResponseSchema';
+import {
+  aiResponseSchema,
+  resultSchema,
+} from '@src/constants/aiResponseSchema';
 import { zodTextFormat } from 'openai/helpers/zod';
 import { systemPrompt } from '@src/constants/prompt';
 
@@ -34,7 +37,7 @@ export class OpenAIService {
   // Response API version (OpenAI ChatGPT)
   async getAIResponse(content: string, responseId: string | null) {
     try {
-      const response = await this.openai.responses.create({
+      const { id, output_parsed } = await this.openai.responses.parse({
         model: 'gpt-4.1-nano-2025-04-14',
         input: [
           {
@@ -43,9 +46,12 @@ export class OpenAIService {
           },
         ],
         previous_response_id: responseId,
+        text: {
+          format: zodTextFormat(aiResponseSchema, 'aiResponse'),
+        },
       });
-      console.log('response: ', response.output_text);
-      return response;
+      console.log('response: ', { id, ...output_parsed });
+      return { id, ...output_parsed };
     } catch (error) {
       console.error('Error in getCompletion: ', error);
       throw error;

@@ -1,4 +1,8 @@
 import { z } from 'zod/v3'; // openai 버전 문제로 인해 사용 (zodTextFormat)
+export const aiResponseSchema = z.object({
+  output_text: z.string().describe('AI 응답 텍스트'),
+  ko_content: z.string().describe('AI 응답 한국어 텍스트'),
+});
 
 export const resultSchema = z
   .object({

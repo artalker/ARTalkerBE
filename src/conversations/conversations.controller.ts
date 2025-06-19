@@ -11,6 +11,7 @@ import {
 import { ConversationsService } from './conversations.service';
 import { CreateConversationDto } from './dto/create-conversation.dto';
 import { UpdateConversationDto } from './dto/update-conversation.dto';
+import { SearchConversationDto } from './dto/search-conversation.dto';
 
 @Controller('conversations')
 export class ConversationsController {
@@ -22,8 +23,8 @@ export class ConversationsController {
   }
 
   @Get()
-  findAll(@Query('userId') userId: number) {
-    return this.conversationsService.findAll(userId);
+  findAll(@Query() searchDto: SearchConversationDto) {
+    return this.conversationsService.findAll(searchDto);
   }
 
   @Get(':id')
@@ -48,5 +49,10 @@ export class ConversationsController {
   @Patch(':id/end')
   endConversation(@Param('id') id: string) {
     return this.conversationsService.endConversation(+id);
+  }
+
+  @Patch(':id/delete')
+  deleteConversation(@Param('id') id: string) {
+    return this.conversationsService.deleteConversation(+id);
   }
 }

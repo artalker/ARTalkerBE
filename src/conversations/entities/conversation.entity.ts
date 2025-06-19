@@ -36,8 +36,14 @@ export class Conversation {
   @Column({ name: 'is_complete', type: 'boolean' })
   isComplete: boolean;
 
+  @Column({ name: 'is_deleted', type: 'boolean', default: false })
+  isDeleted: boolean;
+
+  @Column({ name: 'deleted_at', nullable: true })
+  deletedAt: Date;
+
   // @CreateDateColumn  레코드가 생성성될 때 현재 시간을 자동으로 할당
-  @CreateDateColumn({ name: 'started_at' })
+  @Column({ name: 'started_at' })
   startedAt: Date;
 
   @Column({ name: 'ended_at', nullable: true })

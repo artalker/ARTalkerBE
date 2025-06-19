@@ -3,6 +3,7 @@ import { DataSource, Repository } from 'typeorm';
 import { Conversation } from './entities/conversation.entity';
 import { CreateConversationDto } from './dto/create-conversation.dto';
 import { UpdateConversationDto } from './dto/update-conversation.dto';
+import { SearchConversationDto } from './dto/search-conversation.dto';
 
 @Injectable()
 export class ConversationsRepository {
@@ -23,21 +24,55 @@ export class ConversationsRepository {
       userLevel,
       difficulty,
       isComplete: false,
+      isDeleted: false,
       startedAt: new Date(),
     });
     return this.conversationsRepository.save(conversation);
   }
 
-  async findAllConversationsByUserId(userId: number): Promise<Conversation[]> {
-    return this.conversationsRepository.find({
-      where: { user: { id: userId } },
-      relations: ['artwork'],
-      order: {
-        startedAt: 'DESC',
-      },
-    });
-  }
+  async findAllConversationsByUserId(searchDto: SearchConversationDto) {
+    const { page = 1, limit = 10, search, userId } = searchDto;
+    const skip = (page - 1) * limit;
 
+    const queryBuilder =
+      this.conversationsRepository.createQueryBuilder('conversation');
+
+    // artwork 정보를 함께 조회하기 위해 join 추가
+    queryBuilder
+      .leftJoinAndSelect('conversation.artwork', 'artwork')
+      .where('conversation.isDeleted = :isDeleted', {
+        isDeleted: false,
+      });
+
+    if (userId) {
+      queryBuilder.andWhere('conversation.user.id = :userId', { userId });
+    }
+
+    if (search) {
+      // queryBuilder 로 동적쿼리 생성
+      queryBuilder.andWhere(
+        '(artwork.title LIKE :search OR artwork.artist LIKE :search)', // Like 부분 일치 검색
+        { search: `%${search}%` }, // % 와일드카드 앞뒤 일치 검색
+      );
+    }
+
+    const [items, total] = await queryBuilder
+      .skip(skip)
+      .take(limit)
+      .orderBy('conversation.startedAt', 'DESC')
+      .getManyAndCount();
+
+    return {
+      items,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+        search,
+      },
+    };
+  }
   async findConversationById(id: number): Promise<Conversation | null> {
     return this.conversationsRepository.findOne({
       where: { id },
@@ -65,7 +100,11 @@ export class ConversationsRepository {
     return this.findConversationById(id);
   }
 
-  async deleteConversation(id: number): Promise<void> {
-    await this.conversationsRepository.delete(id);
+  async deleteConversation(id: number): Promise<Conversation | null> {
+    await this.conversationsRepository.update(id, {
+      isDeleted: true,
+      deletedAt: new Date(),
+    });
+    return this.findConversationById(id);
   }
 }

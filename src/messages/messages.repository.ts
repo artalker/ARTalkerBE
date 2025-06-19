@@ -12,7 +12,8 @@ export class MessagesRepository {
   }
 
   async createMessage(createMessageDto: CreateMessageDto): Promise<Messages> {
-    const { conversationId, sender, content, responseId } = createMessageDto;
+    const { conversationId, sender, content, responseId, ko_content } =
+      createMessageDto;
     if (sender !== 'user' && sender !== 'assistant') {
       throw new BadRequestException('Invalid sender');
     }
@@ -22,6 +23,7 @@ export class MessagesRepository {
       sender,
       content,
       responseId,
+      ko_content,
     });
     return this.messagesRepository.save(message);
   }

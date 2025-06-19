@@ -3,4 +3,5 @@ export class CreateMessageDto {
   sender: string;
   content: string;
   responseId: string;
+  ko_content?: string;
 }

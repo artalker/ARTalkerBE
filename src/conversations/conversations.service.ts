@@ -6,6 +6,7 @@ import {
 import { CreateConversationDto } from './dto/create-conversation.dto';
 import { UpdateConversationDto } from './dto/update-conversation.dto';
 import { ConversationsRepository } from './conversations.repository';
+import { SearchConversationDto } from './dto/search-conversation.dto';
 
 @Injectable()
 export class ConversationsService {
@@ -19,8 +20,8 @@ export class ConversationsService {
     );
   }
 
-  findAll(userId: number) {
-    return this.conversationsRepository.findAllConversationsByUserId(userId);
+  findAll(searchDto: SearchConversationDto) {
+    return this.conversationsRepository.findAllConversationsByUserId(searchDto);
   }
 
   findOne(id: number) {
@@ -36,7 +37,7 @@ export class ConversationsService {
 
   remove(id: number) {
     // TODO: 대화 삭제시 레벨 업데이트 및 AI 대화 분석 결과 삭제
-    return this.conversationsRepository.deleteConversation(id);
+    // return this.conversationsRepository.deleteConversation(id);
   }
 
   async endConversation(id: number) {
@@ -52,5 +53,15 @@ export class ConversationsService {
     }
     // TODO: 대화 종료시 레벨 업데이트 및 AI 대화 분석 결과 저장
     return this.conversationsRepository.endConversation(id);
+  }
+
+  async deleteConversation(id: number) {
+    const conversation =
+      await this.conversationsRepository.findConversationById(id);
+
+    if (!conversation) {
+      throw new NotFoundException('대화를 찾을 수 없습니다.');
+    }
+    return this.conversationsRepository.deleteConversation(id);
   }
 }

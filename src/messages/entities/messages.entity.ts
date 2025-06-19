@@ -26,6 +26,9 @@ export class Messages {
   @Column('text')
   content: string;
 
+  @Column({ name: 'ko_content', type: 'text', nullable: true })
+  ko_content: string;
+
   @CreateDateColumn({ name: 'timestamp' })
   timestamp: Date;
 }

@@ -1,7 +1,6 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { MessagesRepository } from './messages.repository';
-import { Messages } from './entities/messages.entity';
 import { OpenAIService } from '@src/openai/openai.service';
 import { ConversationsRepository } from '@src/conversations/conversations.repository';
 import { ArtworksRepository } from '@src/artworks/artworks.repository';
@@ -17,7 +16,7 @@ export class MessagesService {
   ) {}
 
   // 사용자 메시지 생성 및 AI 응답 생성
-  async createMessage(createMessageDto: CreateMessageDto): Promise<Messages> {
+  async createMessage(createMessageDto: CreateMessageDto) {
     try {
       // 1. 사용자 메시지 저장
       await this.messagesRepository.createMessage(createMessageDto);
@@ -37,7 +36,7 @@ export class MessagesService {
   }
 
   // TODO: repository로 이동 or 분리할지 고려
-  private async generateAiResponse(conversationId: number): Promise<Messages> {
+  private async generateAiResponse(conversationId: number) {
     const conversation =
       await this.conversationsRepository.findConversationById(conversationId);
     if (!conversation) {
@@ -67,16 +66,16 @@ export class MessagesService {
     const prompt = getAiResponsePrompt({ conversation, artwork });
 
     // const aiResponse = await this.openAIService.getCompletion(prompt);
-    const aiResponse = await this.openAIService.getAIResponse(
-      prompt,
-      responseId,
-    );
+    const { id, output_text, ko_content } =
+      await this.openAIService.getAIResponse(prompt, responseId);
+    console.log('aiResponse: ', { id, output_text, ko_content });
 
     return this.messagesRepository.createMessage({
       conversationId,
       sender: 'assistant',
-      content: aiResponse.output_text || '',
-      responseId: aiResponse.id || '',
+      content: output_text || '',
+      ko_content: ko_content || '',
+      responseId: id || '',
     });
   }
 
@@ -84,7 +83,7 @@ export class MessagesService {
     return this.messagesRepository.findAllByConversationId(conversationId);
   }
 
-  async generateInitialAiMessage(conversationId: number): Promise<Messages> {
+  async generateInitialAiMessage(conversationId: number) {
     const conversation =
       await this.conversationsRepository.findConversationById(conversationId);
 
@@ -111,13 +110,16 @@ export class MessagesService {
     const prompt = getInitialPrompt({ conversation, artwork });
 
     // const aiResponse = await this.openAIService.getCompletion(prompt);
-    const aiResponse = await this.openAIService.getAIResponse(prompt, null);
+    const { id, output_text, ko_content } =
+      await this.openAIService.getAIResponse(prompt, null);
+    console.log('aiResponse: ', { id, output_text, ko_content });
 
     return this.messagesRepository.createMessage({
       conversationId,
       sender: 'assistant',
-      content: aiResponse.output_text || '',
-      responseId: aiResponse.id || '',
+      content: output_text || '',
+      ko_content: ko_content || '',
+      responseId: id || '',
     });
   }
 
