@@ -23,6 +23,10 @@ export class ArtworksService {
     return this.artworksRepository.findOne(id);
   }
 
+  getTodayArtworks() {
+    return this.artworksRepository.getTodayArtwork();
+  }
+
   update(id: number, updateArtworkDto: UpdateArtworkDto) {
     return `This action updates a #${id} artwork`;
   }

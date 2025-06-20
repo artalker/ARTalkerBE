@@ -84,6 +84,19 @@ export class ArtworksRepository {
       },
     };
   }
+
+  async getTodayArtwork() {
+    // 랜덤하게 5개의 artwork 조회
+    const artworks = await this.artworksRepository
+      .createQueryBuilder('artwork')
+      .orderBy('RANDOM()')
+      .take(5)
+      .getMany();
+    console.log('artworks: ', artworks);
+
+    return artworks;
+  }
+
   async updateArtwork(
     id: number,
     updateArtworkDto: UpdateArtworkDto,

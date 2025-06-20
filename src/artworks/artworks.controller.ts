@@ -32,6 +32,11 @@ export class ArtworksController {
     return this.artworksService.findAll(searchDto);
   }
 
+  @Get('today')
+  getTodayArtworks() {
+    return this.artworksService.getTodayArtworks();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.artworksService.findOne(+id);
