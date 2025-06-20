@@ -31,6 +31,7 @@ export class MessagesRepository {
   findAllByConversationId(conversationId: number) {
     return this.messagesRepository.find({
       where: { conversation: { id: conversationId } },
+      order: { timestamp: 'ASC' },
     });
   }
 }
