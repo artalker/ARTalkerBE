@@ -41,7 +41,7 @@ export class ConversationsRepository {
     queryBuilder
       .leftJoinAndSelect('conversation.artwork', 'artwork')
       .leftJoin('conversation.rating', 'rating')
-      .addSelect('rating.totalScorePercentage')
+      .addSelect('rating.totalScoreStar')
       .where('conversation.isDeleted = :isDeleted', {
         isDeleted: false,
       });
