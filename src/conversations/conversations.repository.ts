@@ -40,10 +40,11 @@ export class ConversationsRepository {
     // artwork 정보를 함께 조회하기 위해 join 추가
     queryBuilder
       .leftJoinAndSelect('conversation.artwork', 'artwork')
+      .leftJoin('conversation.rating', 'rating')
+      .addSelect('rating.totalScorePercentage')
       .where('conversation.isDeleted = :isDeleted', {
         isDeleted: false,
       });
-
     if (userId) {
       queryBuilder.andWhere('conversation.user.id = :userId', { userId });
     }

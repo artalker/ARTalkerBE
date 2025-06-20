@@ -6,9 +6,12 @@ import {
   CreateDateColumn,
   Check,
   JoinColumn,
+  OneToOne,
 } from 'typeorm';
 import { User } from '@src/users/entities/user.entity';
 import { Artwork } from '@src/artworks/entities/artwork.entity';
+import { ConversationRating } from '@src/results/entities/conversation_ratings.entity';
+import { ConversationFeedback } from '@src/results/entities/conversation_feedbacks.entity';
 
 @Entity()
 @Check('user_level_check', 'user_level BETWEEN 1 AND 7')
@@ -26,6 +29,12 @@ export class Conversation {
   @ManyToOne(() => Artwork, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'artwork_id' })
   artwork: Artwork;
+
+  @OneToOne(() => ConversationRating, (rating) => rating.conversation)
+  rating: ConversationRating;
+
+  @OneToOne(() => ConversationFeedback, (feedback) => feedback.conversation)
+  feedback: ConversationFeedback;
 
   @Column({ name: 'user_level', type: 'numeric' })
   userLevel: number; // 학습하는 현재 유저 레벨

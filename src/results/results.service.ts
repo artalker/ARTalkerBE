@@ -39,8 +39,10 @@ export class ResultsService {
     console.log(' ratings, feedback: ', ratings, feedback);
 
     try {
+      const totalScoreStar = Math.round(ratings.totalScorePercentage / 20);
+
       const result = await this.resultsRepository.createRatingAndFeedback(
-        { ...ratings, conversationId },
+        { ...ratings, conversationId, totalScoreStar },
         { ...feedback, conversationId },
       );
       return result;

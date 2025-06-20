@@ -189,6 +189,10 @@ export class ConversationRating {
   })
   totalScorePercentage: number;
 
+  // 종합 점수 별점
+  @Column({ name: 'total_score_star', type: 'int' })
+  totalScoreStar: number;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
