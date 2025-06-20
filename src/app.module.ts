@@ -11,6 +11,7 @@ import { ArtworksModule } from './artworks/artworks.module';
 import { ConversationsModule } from './conversations/conversations.module';
 import { MessagesModule } from './messages/messages.module';
 import { ResultsModule } from './results/results.module';
+import { TipsModule } from './tips/tips.module';
 @Module({
   imports: [
     // nest.js 설정
@@ -49,6 +50,7 @@ import { ResultsModule } from './results/results.module';
     ConversationsModule,
     MessagesModule,
     ResultsModule,
+    TipsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
