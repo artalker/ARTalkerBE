@@ -39,7 +39,7 @@ export class ResultsController {
       userId,
       startDate,
       endDate,
-      type: type || 'week',
+      type,
     });
   }
 }

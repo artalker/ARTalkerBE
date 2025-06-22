@@ -236,20 +236,36 @@ export class ResultsRepository {
     endDate: string,
     type: 'week' | 'month',
   ): Promise<EvaluationResult[] | ConversationRating[]> {
-    return await this.conversationRatingRepository
-      .createQueryBuilder('rating')
-      .leftJoin('rating.conversation', 'conversation')
-      .select(this.getAverageSelectFields(type))
-      .where('conversation.user.id = :userId', { userId })
-      .andWhere('conversation.startedAt >= :startDate', {
-        startDate: new Date(startDate),
-      })
-      .andWhere('conversation.startedAt <= :endDate', {
-        endDate: new Date(endDate),
-      })
-      .andWhere('conversation.isComplete = true')
-      .groupBy(`DATE_TRUNC('${type}', conversation.startedAt)`)
-      .orderBy('period', 'ASC')
-      .getRawMany<EvaluationResult>();
+    if (type === 'week' || type === 'month') {
+      return await this.conversationRatingRepository
+        .createQueryBuilder('rating')
+        .leftJoin('rating.conversation', 'conversation')
+        .select(this.getAverageSelectFields(type))
+        .where('conversation.user.id = :userId', { userId })
+        .andWhere('conversation.startedAt >= :startDate', {
+          startDate: new Date(startDate),
+        })
+        .andWhere('conversation.startedAt <= :endDate', {
+          endDate: new Date(endDate),
+        })
+        .andWhere('conversation.isComplete = true')
+        .groupBy(`DATE_TRUNC('${type}', conversation.startedAt)`)
+        .orderBy('period', 'ASC')
+        .getRawMany<EvaluationResult>();
+    }
+
+    // 기본: 개별 데이터 반환
+    return await this.conversationRatingRepository.find({
+      relations: ['conversation'],
+      where: {
+        conversation: {
+          user: { id: userId },
+          startedAt: MoreThanOrEqual(new Date(startDate)),
+          endedAt: LessThanOrEqual(new Date(endDate)),
+          isComplete: true,
+        },
+      },
+      order: { conversation: { startedAt: 'ASC' } },
+    });
   }
 }
