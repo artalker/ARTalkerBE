@@ -117,39 +117,47 @@ export class ResultsRepository {
   // TODO: 배치 고려, 최적화 방법 고려
   async getStatistics(userId: number): Promise<LearningStatistics> {
     try {
-      // 1. 총 학습시간 (분 단위)
-      const totalLearningTimeResult = await this.conversationRepository
-        .createQueryBuilder('conversation')
-        .select(
-          'COALESCE(SUM(EXTRACT(EPOCH FROM (conversation.endedAt - conversation.startedAt)) / 60), 0)',
-          'totalMinutes',
-        )
-        .where('conversation.isComplete = :isComplete', { isComplete: true })
-        .andWhere('conversation.endedAt IS NOT NULL')
-        .andWhere('conversation.user = :userId', { userId })
-        .getRawOne<TotalTimeQueryResult>();
+      // 모든 쿼리를 병렬로 실행
+      const [
+        totalLearningTimeResult,
+        completedCount,
+        uniqueTopicsResult,
+        consecutiveDays,
+      ] = await Promise.all([
+        // 1. 총 학습시간 (분 단위)
+        this.conversationRepository
+          .createQueryBuilder('conversation')
+          .select(
+            'COALESCE(SUM(EXTRACT(EPOCH FROM (conversation.endedAt - conversation.startedAt)) / 60), 0)',
+            'totalMinutes',
+          )
+          .where('conversation.isComplete = :isComplete', { isComplete: true })
+          .andWhere('conversation.endedAt IS NOT NULL')
+          .andWhere('conversation.user = :userId', { userId })
+          .getRawOne<TotalTimeQueryResult>(),
+
+        // 2. 완료된 학습 갯수
+        this.conversationRepository.count({
+          where: {
+            isComplete: true,
+            user: { id: userId },
+          },
+        }),
+
+        // 3. 학습한 주제의 갯수 (고유 artwork 수)
+        this.conversationRepository
+          .createQueryBuilder('conversation')
+          .select('COUNT(DISTINCT conversation.artwork)', 'uniqueTopics')
+          .where('conversation.isComplete = :isComplete', { isComplete: true })
+          .andWhere('conversation.user = :userId', { userId })
+          .getRawOne<UniqueTopicsQueryResult>(),
+
+        // 4. 연속 학습일 계산
+        this.getConsecutiveDays(userId),
+      ]);
 
       console.log('=== 총 학습시간(분) 계산 결과 ===');
       console.log('totalMinutes:', totalLearningTimeResult?.totalMinutes);
-
-      // 2. 완료된 학습 갯수
-      const completedCount = await this.conversationRepository.count({
-        where: {
-          isComplete: true,
-          user: { id: userId },
-        },
-      });
-
-      // 3. 학습한 주제의 갯수 (고유 artwork 수)
-      const uniqueTopicsResult = await this.conversationRepository
-        .createQueryBuilder('conversation')
-        .select('COUNT(DISTINCT conversation.artwork)', 'uniqueTopics')
-        .where('conversation.isComplete = :isComplete', { isComplete: true })
-        .andWhere('conversation.user = :userId', { userId })
-        .getRawOne<UniqueTopicsQueryResult>();
-
-      // 4. 연속 학습일 계산
-      const consecutiveDays = await this.getConsecutiveDays(userId);
 
       const totalMinutes = parseInt(
         totalLearningTimeResult?.totalMinutes || '0',
