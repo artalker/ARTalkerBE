@@ -64,4 +64,23 @@ export class ResultsService {
     const statistics = await this.resultsRepository.getStatistics(userId);
     return statistics;
   }
+
+  async getOverallEvaluation({
+    userId,
+    startDate,
+    endDate,
+    type,
+  }: {
+    userId: number;
+    startDate: string;
+    endDate: string;
+    type: 'week' | 'month';
+  }) {
+    return await this.resultsRepository.getOverallEvaluation(
+      userId,
+      startDate,
+      endDate,
+      type,
+    );
+  }
 }

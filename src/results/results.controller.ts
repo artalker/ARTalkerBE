@@ -27,4 +27,19 @@ export class ResultsController {
   async getStatistics(@Query('userId', ParseIntPipe) userId: number) {
     return await this.resultsService.getStatistics(userId);
   }
+
+  @Get('overall-evaluation')
+  async getOverallEvaluation(
+    @Query('userId', ParseIntPipe) userId: number,
+    @Query('startDate') startDate: string,
+    @Query('endDate') endDate: string,
+    @Query('type') type: 'week' | 'month',
+  ) {
+    return await this.resultsService.getOverallEvaluation({
+      userId,
+      startDate,
+      endDate,
+      type: type || 'week',
+    });
+  }
 }

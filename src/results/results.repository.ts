@@ -1,8 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { DataSource, Repository } from 'typeorm';
+import {
+  DataSource,
+  LessThanOrEqual,
+  MoreThanOrEqual,
+  Repository,
+} from 'typeorm';
 import { ConversationRating } from './entities/conversation_ratings.entity';
 import { ConversationFeedback } from './entities/conversation_feedbacks.entity';
 import { Conversation } from '../conversations/entities/conversation.entity';
+import { EvaluationResult } from './dto/evaluation-result.dto';
 
 // 통계 데이터 인터페이스 정의
 export interface LearningStatistics {
@@ -179,5 +185,71 @@ export class ResultsRepository {
         consecutiveLearningDays: 0,
       };
     }
+  }
+
+  private getAverageSelectFields(type: 'week' | 'month'): string[] {
+    const numericFields = [
+      'totalScorePercentage',
+      'totalScoreStar',
+      'speechSentenceCount',
+      'speechWordCount',
+      'vocabBeginnerCount',
+      'vocabIntermediateCount',
+      'vocabAdvancedCount',
+      'vocabDiversityCount',
+      'vocabBeginnerRatio',
+      'vocabIntermediateRatio',
+      'vocabAdvancedRatio',
+      'vocabDiversityScore',
+      'sentenceAccuracyLowCount',
+      'sentenceAccuracyMediumCount',
+      'sentenceAccuracyHighCount',
+      'sentenceAccuracyLowRatio',
+      'sentenceAccuracyMediumRatio',
+      'sentenceAccuracyHighRatio',
+      'sentenceAccuracyScore',
+      'expressBeginnerCount',
+      'expressIntermediateCount',
+      'expressAdvancedCount',
+      'expressBeginnerRatio',
+      'expressIntermediateRatio',
+      'expressAdvancedRatio',
+      'expressScore',
+      'expressAppropriatenessScore',
+      'expressCreativityScore',
+    ];
+
+    return [
+      `DATE_TRUNC('${type}', conversation.startedAt) as period`,
+      ...numericFields.map(
+        (field) =>
+          `ROUND(AVG(rating.${field}), 2) as avg${field.charAt(0).toUpperCase() + field.slice(1)}`,
+      ),
+      'COUNT(*) as totalSessions',
+      `'${type}' as type`,
+    ];
+  }
+
+  async getOverallEvaluation(
+    userId: number,
+    startDate: string,
+    endDate: string,
+    type: 'week' | 'month',
+  ): Promise<EvaluationResult[] | ConversationRating[]> {
+    return await this.conversationRatingRepository
+      .createQueryBuilder('rating')
+      .leftJoin('rating.conversation', 'conversation')
+      .select(this.getAverageSelectFields(type))
+      .where('conversation.user.id = :userId', { userId })
+      .andWhere('conversation.startedAt >= :startDate', {
+        startDate: new Date(startDate),
+      })
+      .andWhere('conversation.startedAt <= :endDate', {
+        endDate: new Date(endDate),
+      })
+      .andWhere('conversation.isComplete = true')
+      .groupBy(`DATE_TRUNC('${type}', conversation.startedAt)`)
+      .orderBy('period', 'ASC')
+      .getRawMany<EvaluationResult>();
   }
 }
