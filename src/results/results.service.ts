@@ -74,7 +74,7 @@ export class ResultsService {
     userId: number;
     startDate: string;
     endDate: string;
-    type: 'week' | 'month';
+    type: 'day' | 'week' | 'month';
   }) {
     return await this.resultsRepository.getOverallEvaluation(
       userId,

@@ -39,6 +39,9 @@ import { TipsModule } from './tips/tips.module';
         synchronize: true,
         logging: true,
         logger: 'advanced-console',
+
+        // timezone
+        timezone: 'Asia/Seoul',
       }),
       inject: [ConfigService],
     }),

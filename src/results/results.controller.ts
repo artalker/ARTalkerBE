@@ -33,7 +33,7 @@ export class ResultsController {
     @Query('userId', ParseIntPipe) userId: number,
     @Query('startDate') startDate: string,
     @Query('endDate') endDate: string,
-    @Query('type') type: 'week' | 'month',
+    @Query('type') type: 'day' | 'week' | 'month',
   ) {
     return await this.resultsService.getOverallEvaluation({
       userId,

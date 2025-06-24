@@ -187,7 +187,7 @@ export class ResultsRepository {
     }
   }
 
-  private getAverageSelectFields(type: 'week' | 'month'): string[] {
+  private getAverageSelectFields(type: 'day' | 'week' | 'month'): string[] {
     const numericFields = [
       'totalScorePercentage',
       'totalScoreStar',
@@ -234,38 +234,74 @@ export class ResultsRepository {
     userId: number,
     startDate: string,
     endDate: string,
-    type: 'week' | 'month',
-  ): Promise<EvaluationResult[] | ConversationRating[]> {
-    if (type === 'week' || type === 'month') {
-      return await this.conversationRatingRepository
+    type: 'day' | 'week' | 'month',
+  ) {
+    if (type === 'day' || type === 'week' || type === 'month') {
+      const startDateKST = new Date(startDate + 'T00:00:00+09:00');
+      const endDateKST = new Date(endDate + 'T23:59:59+09:00');
+
+      console.log('=== getOverallEvaluation 조회 시작 ===');
+      console.log('userId:', userId);
+      console.log('startDate:', startDate);
+      console.log('endDate:', endDate);
+      console.log('type:', type);
+      console.log('startDateKST:', startDateKST);
+      console.log('endDateKST:', endDateKST);
+
+      const queryBuilder = this.conversationRatingRepository
         .createQueryBuilder('rating')
         .leftJoin('rating.conversation', 'conversation')
         .select(this.getAverageSelectFields(type))
         .where('conversation.user.id = :userId', { userId })
         .andWhere('conversation.startedAt >= :startDate', {
-          startDate: new Date(startDate),
+          startDate: startDateKST,
         })
         .andWhere('conversation.startedAt <= :endDate', {
-          endDate: new Date(endDate),
+          endDate: endDateKST,
         })
         .andWhere('conversation.isComplete = true')
+        .andWhere('conversation.isDeleted = false')
         .groupBy(`DATE_TRUNC('${type}', conversation.startedAt)`)
-        .orderBy('period', 'ASC')
-        .getRawMany<EvaluationResult>();
-    }
+        .orderBy('period', 'ASC');
 
-    // 기본: 개별 데이터 반환
-    return await this.conversationRatingRepository.find({
-      relations: ['conversation'],
-      where: {
-        conversation: {
-          user: { id: userId },
-          startedAt: MoreThanOrEqual(new Date(startDate)),
-          endedAt: LessThanOrEqual(new Date(endDate)),
-          isComplete: true,
-        },
-      },
-      order: { conversation: { startedAt: 'ASC' } },
-    });
+      // 실행될 SQL 쿼리 로그
+      console.log('=== 실행될 SQL 쿼리 ===');
+      console.log(queryBuilder.getQuery());
+      console.log('=== 쿼리 파라미터 ===');
+      console.log(queryBuilder.getParameters());
+
+      // 먼저 조건에 맞는 conversation 데이터가 있는지 확인
+      const conversationCheck = await this.conversationRepository
+        .createQueryBuilder('conversation')
+        .select([
+          'conversation.id',
+          'conversation.startedAt',
+          'conversation.isComplete',
+          'conversation.isDeleted',
+        ])
+        .where('conversation.user.id = :userId', { userId })
+        .andWhere('conversation.startedAt >= :startDate', {
+          startDate: startDateKST,
+        })
+        .andWhere('conversation.startedAt <= :endDate', {
+          endDate: endDateKST,
+        })
+        .andWhere('conversation.isComplete = true')
+        .andWhere('conversation.isDeleted = false')
+        .getMany();
+
+      console.log('=== 조건에 맞는 conversation 데이터 ===');
+      console.log('찾은 conversation 개수:', conversationCheck.length);
+      console.log('conversation 데이터:', conversationCheck);
+
+      const result = await queryBuilder.getRawMany<EvaluationResult>();
+
+      console.log('=== 쿼리 결과 ===');
+      console.log('결과 개수:', result.length);
+      console.log('결과 데이터:', result);
+      console.log('=== getOverallEvaluation 조회 끝 ===');
+
+      return result;
+    }
   }
 }
