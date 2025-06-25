@@ -13,12 +13,21 @@ export class UsersRepository {
   }
 
   async createUser(createUserDto: CreateUserDto): Promise<User> {
-    const { name, level, experience, profileImage } = createUserDto;
-    const user = this.usersRepository.create({
+    const {
+      kakaoId,
       name,
       level,
       experience,
-      profileImage,
+      profileImageUrl,
+      thumbnailImageUrl,
+    } = createUserDto;
+    const user = this.usersRepository.create({
+      kakaoId,
+      name,
+      level,
+      experience,
+      profileImageUrl,
+      thumbnailImageUrl,
     });
     return this.usersRepository.save(user);
   }
@@ -33,5 +42,9 @@ export class UsersRepository {
   ): Promise<User | null> {
     await this.usersRepository.update(id, updateUserDto);
     return this.findOne(id);
+  }
+
+  async findByKakaoId(kakaoId: string): Promise<User | null> {
+    return this.usersRepository.findOne({ where: { kakaoId } });
   }
 }

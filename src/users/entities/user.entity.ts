@@ -10,11 +10,17 @@ export class User {
   name: string;
 
   @Column({ name: 'profile_image', type: 'text', nullable: true })
-  profileImage: string;
+  profileImageUrl: string;
+
+  @Column({ name: 'thumbnail_image', type: 'text', nullable: true })
+  thumbnailImageUrl: string;
 
   @Column({ type: 'integer', default: 1 })
   level: number;
 
   @Column({ type: 'integer', default: 0 })
   experience: number;
+
+  @Column({ name: 'kakao_id', type: 'text', unique: true, nullable: true })
+  kakaoId: string;
 }

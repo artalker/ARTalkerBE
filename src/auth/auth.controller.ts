@@ -1,24 +1,15 @@
-import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { KakaoAuthGuard } from './auth.guard';
+import { KakaoLoginDto } from './dto/kakao-login.dto';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Get('kakao')
-  @UseGuards(KakaoAuthGuard)
-  async kakaoAuth() {}
-
-  @Get('kakao/callback')
-  @UseGuards(KakaoAuthGuard)
-  async kakoCallback(
-    // @SocialUser() user: SocialUser,
-    @Res({ passthrough: true }) res: Response,
-  ) {
-    // const { accessToken, refreshToken } = await this.authService.login(user);
-    // res.cookie('accessToken', accessToken);
-    // res.cookie('refreshToken', refreshToken);
-    // res.redirect('http://localhost:3000/');
+  @Post('kakao/login')
+  async kakaoLogin(@Body() body: KakaoLoginDto) {
+    // 프론트엔드에서 받은 인가코드로 토큰 요청
+    const result = await this.authService.kakaoLoginWithCode(body.code);
+    return result;
   }
 }
