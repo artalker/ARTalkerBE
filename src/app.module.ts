@@ -5,13 +5,14 @@ import { OpenAIModule } from './openai/openai.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from './users/entities/user.entity';
+
 import { UsersModule } from './users/users.module';
 import { ArtworksModule } from './artworks/artworks.module';
 import { ConversationsModule } from './conversations/conversations.module';
 import { MessagesModule } from './messages/messages.module';
 import { ResultsModule } from './results/results.module';
 import { TipsModule } from './tips/tips.module';
+import { LevelsModule } from './levels/levels.module';
 @Module({
   imports: [
     // nest.js 설정
@@ -54,6 +55,7 @@ import { TipsModule } from './tips/tips.module';
     MessagesModule,
     ResultsModule,
     TipsModule,
+    LevelsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

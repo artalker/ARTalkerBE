@@ -10,6 +10,7 @@ import { ConversationRating } from '../results/entities/conversation_ratings.ent
 import { OpenAIService } from '../openai/openai.service';
 import { ConversationsRepository } from '@src/conversations/conversations.repository';
 import { MessagesRepository } from '@src/messages/messages.repository';
+import { LevelsModule } from '@src/levels/levels.module';
 @Module({
   imports: [
     TypeOrmModule.forFeature([
@@ -18,6 +19,7 @@ import { MessagesRepository } from '@src/messages/messages.repository';
       ConversationFeedback,
       ConversationRating,
     ]),
+    LevelsModule,
   ],
   controllers: [ResultsController],
   providers: [
@@ -27,5 +29,6 @@ import { MessagesRepository } from '@src/messages/messages.repository';
     ConversationsRepository,
     MessagesRepository,
   ],
+  exports: [ResultsService, ResultsRepository],
 })
 export class ResultsModule {}

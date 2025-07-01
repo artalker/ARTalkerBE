@@ -47,4 +47,26 @@ export class UsersRepository {
   async findByKakaoId(kakaoId: string): Promise<User | null> {
     return this.usersRepository.findOne({ where: { kakaoId } });
   }
+
+  async addExperience(userId: number, experienceGained: number): Promise<void> {
+    await this.usersRepository
+      .createQueryBuilder()
+      .update(User)
+      .set({
+        experience: () => `experience + ${experienceGained}`,
+      })
+      .where('id = :id', { id: userId })
+      .execute();
+  }
+
+  async updateUserLevel(userId: number, newLevel: number): Promise<void> {
+    await this.usersRepository.update(userId, { level: newLevel });
+  }
+
+  async getUserWithExperience(userId: number): Promise<User | null> {
+    return this.usersRepository.findOne({
+      where: { id: userId },
+      select: ['id', 'name', 'level', 'experience', 'profileImageUrl'],
+    });
+  }
 }

@@ -77,7 +77,7 @@ export class ConversationsRepository {
   async findConversationById(id: number): Promise<Conversation | null> {
     return this.conversationsRepository.findOne({
       where: { id },
-      relations: ['artwork'],
+      relations: ['artwork', 'user'],
     });
   }
 

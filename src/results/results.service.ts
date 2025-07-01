@@ -7,12 +7,14 @@ import { ResultsRepository } from './results.repository';
 import { CreateResultDto } from './dto/create-result.dto';
 import { ConversationsRepository } from '@src/conversations/conversations.repository';
 import { OpenAIService } from '@src/openai/openai.service';
+import { LevelsService } from '@src/levels/levels.service';
 @Injectable()
 export class ResultsService {
   constructor(
     private readonly resultsRepository: ResultsRepository,
     private readonly conversationsRepository: ConversationsRepository,
     private readonly openAIService: OpenAIService,
+    private readonly levelsService: LevelsService,
   ) {}
 
   // conversation 학습 결과 생성
@@ -45,6 +47,10 @@ export class ResultsService {
         { ...ratings, conversationId, totalScoreStar },
         { ...feedback, conversationId },
       );
+
+      // 경험치는 endConversation에서 이미 지급됨 (중복 지급 방지)
+      // TODO: 나중에 경험치 로그에 점수 정보 업데이트 기능 추가 가능
+
       return result;
     } catch (error) {
       console.error('Error in create: ', error);
